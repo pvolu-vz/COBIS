@@ -1,0 +1,7 @@
+oaaclient>=3.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+urllib3>=2.0.0
+xlrd>=2.0.0
+openpyxl>=3.1.0
+smbprotocol>=1.13.0
