@@ -413,7 +413,7 @@ def build_oaa_payload(records: list[dict], datasource_name: str,
 
         # Create group if new
         if group not in groups_seen:
-            app.add_local_group(group)
+            app.add_local_group(group, unique_id=group)
             groups_seen.add(group)
             log.debug("Added group: %s", group)
 
