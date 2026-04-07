@@ -410,6 +410,7 @@ def build_oaa_payload(records: list[dict], datasource_name: str,
     for rec in records:
         group = rec["group"]
         username = rec["username"]
+        user_key = username.lower()  # normalize unique_id / native_id
 
         # Create group if new
         if group not in groups_seen:
@@ -418,8 +419,9 @@ def build_oaa_payload(records: list[dict], datasource_name: str,
             log.debug("Added group: %s", group)
 
         # Create user if new (first occurrence wins for attributes)
-        if username not in users_seen:
-            user = app.add_local_user(unique_id=username, name=rec["first_name"])
+        if user_key not in users_seen:
+            display_name = rec["first_name"].title()  # First Letter Upper
+            user = app.add_local_user(unique_id=user_key, name=display_name)
             user.is_active = not (rec["is_disabled"] or rec["is_inactive"])
 
             user.set_property("department", rec["department"])
@@ -440,15 +442,15 @@ def build_oaa_payload(records: list[dict], datasource_name: str,
 
             # Merge last-logon data from T27991126A report if available
             if last_logon_map:
-                logon_ts = last_logon_map.get(username)
+                logon_ts = last_logon_map.get(username) or last_logon_map.get(user_key)
                 if logon_ts:
                     user.last_login_at = logon_ts
                     user.set_property("last_login", logon_ts)
 
-            users_seen[username] = rec
+            users_seen[user_key] = rec
 
         # Assign user to group
-        app.local_users[username].add_group(group)
+        app.local_users[user_key].add_group(group)
 
     log.info("OAA payload built — %d users, %d groups, %d memberships",
              len(users_seen), len(groups_seen), len(records))
